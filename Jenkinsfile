@@ -1,16 +1,33 @@
 pipeline {
-    agent any // Indique que le pipeline peut s'exécuter sur n'importe quel agent disponible
+    agent any
 
     stages {
-        stage('Connexion SCM') {
+        stage('1. Récupération des sources') {
             steps {
-                echo 'Récupération du code depuis GitHub réussie.'
+                checkout scm
+                echo 'Code source récupéré.'
             }
         }
-        stage('Validation Livrable') {
+
+        stage('2. Mise à jour des dépendances') {
             steps {
-                echo 'Le pipeline par défaut est opérationnel.'
-                sh 'echo "Date de l execution : `date`"'
+                // On installe les bibliothèques listées dans requirements.txt
+                sh 'pip install -r requirements.txt'
+            }
+        }
+
+        stage('3. Compilation / Linting') {
+            steps {
+                echo 'Vérification de la syntaxe Python...'
+                // 'python -m py_compile' vérifie s'il y a des erreurs de syntaxe
+                sh 'python3 -m py_compile app.py'
+            }
+        }
+
+        stage('4. Tests Unitaires & E2E') {
+            steps {
+                echo 'Exécution des tests avec Pytest...'
+                sh 'pytest test_app.py'
             }
         }
     }
